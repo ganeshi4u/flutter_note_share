@@ -1,30 +1,24 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:note_share/utils/ColorLoader.dart';
-import 'package:note_share/utils/auth.dart';
+import 'package:provider/provider.dart';
 
-bool _isLoading;
+import 'package:note_share/utils/ColorLoader.dart';
+import 'package:note_share/utils/providers/AuthProvider.dart';
+
+AuthProvider _authProvider;
+final _scaffoldKey = GlobalKey<ScaffoldState>();
 
 class LoginScreen extends StatefulWidget {
-  final VoidCallback loginCallback;
-
-  LoginScreen({this.loginCallback});
-
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
   @override
-  void initState() {
-    _isLoading = false;
-
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    _authProvider = Provider.of<AuthProvider>(context);
+
     return Scaffold(
+      key: _scaffoldKey,
       body: Container(
         child: Stack(
           children: <Widget>[
@@ -69,28 +63,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       height: 30.0,
                     ),
+                    _authProvider.status == Status.Authenticating
+                        ? Center(
+                            child: showCircularProgress(),
+                          )
+                        : _SignInButton(
+                            signInProvider: 'Guest',
+                            color: 0xFF929693,
+                            icon: 0xe971,
+                          ),
                     _SignInButton(
-                      provider: 'Guest',
-                      color: 0xFF929693,
-                      icon: 0xe971,
-                      loginCallback: widget.loginCallback,
-                      showProgressCallback: showProgressCallback,
-                    ),
-                    _SignInButton(
-                      provider: 'Google',
+                      signInProvider: 'Google',
                       color: 0xFF3cba54,
                       icon: 0xea88,
-                      loginCallback: widget.loginCallback,
-                      showProgressCallback: showProgressCallback,
                     ),
                     _SignInButton(
-                      provider: 'Facebook',
+                      signInProvider: 'Facebook',
                       color: 0xFF3b5998,
                       icon: 0xea90,
-                      loginCallback: widget.loginCallback,
-                      showProgressCallback: showProgressCallback,
                     ),
-                    _showCircularProgress(),
                   ],
                 ),
               ),
@@ -100,26 +91,17 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
-  void showProgressCallback() {
-    setState(() {});
-  }
 }
 
 class _SignInButton extends StatelessWidget {
-  final String provider;
+  final String signInProvider;
   final int color;
   final int icon;
 
-  final VoidCallback loginCallback;
-  final VoidCallback showProgressCallback;
-
   _SignInButton({
-    @required this.provider,
+    @required this.signInProvider,
     @required this.color,
     @required this.icon,
-    @required this.loginCallback,
-    @required this.showProgressCallback,
   });
 
   @override
@@ -140,7 +122,7 @@ class _SignInButton extends StatelessWidget {
                   new Padding(
                     padding: const EdgeInsets.only(left: 20.0),
                     child: Text(
-                      provider,
+                      signInProvider,
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -160,15 +142,14 @@ class _SignInButton extends StatelessWidget {
                           IconData(icon, fontFamily: 'icomoon'),
                           color: Color(color),
                         ),
-                        onPressed: () => _signInButtonHandler(context,
-                            provider, showProgressCallback, loginCallback,),
+                        onPressed: () =>
+                            _signInButtonHandler(context, signInProvider),
                       ),
                     ),
                   )
                 ],
               ),
-              onPressed: () => _signInButtonHandler(
-                  context, provider, showProgressCallback, loginCallback,),
+              onPressed: () => _signInButtonHandler(context, signInProvider),
             ),
           ),
         ],
@@ -176,65 +157,60 @@ class _SignInButton extends StatelessWidget {
     );
   }
 
-  _signInButtonHandler(BuildContext context, String provider,
-      VoidCallback showProgressCallback, VoidCallback loginCallback) async {
-    FirebaseUser user;
-
-    _isLoading = true;
-    showProgressCallback();
-
-    if (provider.contains('Guest')) {
-      await guestLogin().then((loggedInUser) {
-        if (loggedInUser != null) {
-          user = loggedInUser;
-          loginCallback();
+  _signInButtonHandler(BuildContext context, String signInProvider) async {
+    if (signInProvider.contains('Guest')) {
+      await _authProvider.guestLogin().then(
+        (loggedIn) {
+          if (loggedIn) {
+            _showSnackbar('Guest, Logged In');
+          }
+        },
+      ).catchError(
+        () => _showSnackbar('Something went wrong!'),
+      );
+    } else if (signInProvider.contains('Google')) {
+      await _authProvider.signInWithGoogle().then((loggedIn) {
+        if (loggedIn) {
+          _showSnackbar('Google, Signed In');
         }
-      }).catchError((loggedInUser) {
-        if (loggedInUser == null) {
-          print('GoogleSignIn: Something went wrong!');
-          _isLoading = false;
-          showProgressCallback();
+      }).catchError(
+        () => _showSnackbar('Something went wrong!'),
+      );
+    } else if (signInProvider.contains('Facebook')) {
+      await _authProvider.logInWithFacebook().then((loggedIn) {
+        if (loggedIn) {
+          _showSnackbar('Facebook, Logged In');
         }
-      });
-    } else if (provider.contains('Google')) {
-      await signInWithGoogle().then((loggedInUser) {
-        if (loggedInUser != null) {
-          user = loggedInUser;
-          loginCallback();
-        }
-      }).catchError((loggedInUser) {
-        if (loggedInUser == null) {
-          print('GoogleSignIn: Something went wrong!');
-          _isLoading = false;
-          showProgressCallback();
-        }
-      });
-    } else if (provider.contains('Facebook')) {
-      user = await logInWithFacebook();
-      loginCallback();
+      }).catchError(
+        () => _showSnackbar('Something went wrong!'),
+      );
     }
   }
 }
 
-Widget _showCircularProgress() {
-  if (_isLoading) {
-    print('showing circle');
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(50),
-        child: ColorLoader(
-          colors: [
-            Colors.red,
-            Colors.green,
-            Colors.indigo,
-            Colors.pinkAccent,
-            Colors.white,
-          ],
-          duration: Duration(milliseconds: 1200),
-        ),
+_showSnackbar(String msg) {
+  _scaffoldKey.currentState.showSnackBar(
+    SnackBar(
+      content: Text(msg),
+    ),
+  );
+}
+
+Widget showCircularProgress() {
+  print('showing circle');
+  return Center(
+    child: Padding(
+      padding: EdgeInsets.all(50),
+      child: ColorLoader(
+        colors: [
+          Colors.red,
+          Colors.green,
+          Colors.indigo,
+          Colors.pinkAccent,
+          Colors.white,
+        ],
+        duration: Duration(milliseconds: 1200),
       ),
-    );
-  }
-  print('circle out');
-  return Container(height: 0.0, width: 0.0);
+    ),
+  );
 }

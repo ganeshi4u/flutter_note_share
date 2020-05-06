@@ -6,12 +6,10 @@ import 'package:note_share/pages/notes/NotesFetcher.dart';
 
 class NotesGridView extends StatefulWidget {
   final String title;
-  final VoidCallback logoutCallback;
   final Function notesCallback;
 
   NotesGridView({
     @required this.title,
-    @required this.logoutCallback,
     @required this.notesCallback,
   });
 
@@ -49,20 +47,16 @@ class _NotesGridViewState extends State<NotesGridView> {
 
     return new SafeArea(
       top: false,
-      left: false,
-      right: false,
+      left: true,
+      right: true,
       bottom: true,
       child: Scaffold(
-        backgroundColor: Colors.grey[200],
         body: CustomScrollView(
           slivers: <Widget>[
             SliverAppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
               floating: true,
-              iconTheme: IconThemeData(
-                color: Colors.grey[800],
-              ),
               leading: GestureDetector(
                 child: Icon(Icons.dashboard),
               ),
@@ -73,8 +67,7 @@ class _NotesGridViewState extends State<NotesGridView> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (BuildContext context) => SettingsPage(
-                              logoutCallback: widget.logoutCallback),
+                          builder: (BuildContext context) => SettingsPage(),
                         ),
                       );
                     },

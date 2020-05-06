@@ -1,92 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:note_share/pages/login/loginPage.dart';
-import 'package:note_share/pages/notes/NotesFeed.dart';
-import 'package:note_share/pages/notes/NotesHome.dart';
-import 'package:note_share/utils/SlideListView.dart';
-import 'package:note_share/utils/auth.dart';
+import 'package:note_share/Routes.dart';
+import 'package:note_share/constants/AppThemes.dart';
+import 'package:note_share/models/UserModel.dart';
+import 'package:note_share/pages/login/LoginScreen.dart';
+import 'package:note_share/pages/splash/SplashScreen.dart';
+import 'package:note_share/utils/AuthWidgetBuilder.dart';
+import 'package:note_share/utils/providers/AuthProvider.dart';
+import 'package:note_share/utils/providers/ThemeProvider.dart';
+import 'package:note_share/utils/services/FirestoreDatabase.dart';
+import 'package:provider/provider.dart';
 
-enum AuthStatus { NOT_DETERMINED, NOT_LOGGED_IN, LOGGED_IN }
-
-class RootPage extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => new _RootPageState();
-}
-
-class _RootPageState extends State<RootPage> {
-  AuthStatus authStatus = AuthStatus.NOT_DETERMINED;
-  String _userId;
-
-  @override
-  void initState() {
-    super.initState();
-    getCurrentUser().then((user) {
-      setState(() {
-        if (user != null) {
-          _userId = user?.uid;
-        }
-        authStatus =
-            user?.uid == null ? AuthStatus.NOT_LOGGED_IN : AuthStatus.LOGGED_IN;
-      });
-    });
-  }
-
-  void loginCallback() {
-    getCurrentUser().then((user) {
-      setState(() {
-        _userId = user.uid.toString();
-      });
-    });
-    setState(() {
-      authStatus = AuthStatus.LOGGED_IN;
-    });
-  }
-
-  void logoutCallback() {
-    setState(() {
-      authStatus = AuthStatus.NOT_LOGGED_IN;
-      _userId = "";
-    });
-  }
-
-  Widget buildWaitingScreen() {
-    return Scaffold(
-      body: Container(
-        alignment: Alignment.center,
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
+class RootPage extends StatelessWidget {
+  const RootPage({Key key, this.databaseBuilder}) : super(key: key);
+  final FirestoreDatabase Function(BuildContext context, String uid)
+      databaseBuilder;
 
   @override
   Widget build(BuildContext context) {
-    switch (authStatus) {
-      case AuthStatus.NOT_DETERMINED:
-        return buildWaitingScreen();
-        break;
-      case AuthStatus.NOT_LOGGED_IN:
-        return new LoginScreen(
-          loginCallback: loginCallback,
-        );
-        break;
-      case AuthStatus.LOGGED_IN:
-        if (_userId.length > 0 && _userId != null) {
-          //return new NotesHome(
-          //  logoutCallback: logoutCallback,
-          //);
-          return new SlideListView(
-            view1: NotesFeed(),
-            view2: new NotesHome(
-              logoutCallback: logoutCallback,
-            ),
-            defaultView: 'list',
-            showFloatingActionButton: false,
-            enabledSwipe: true,
+    return Consumer<ThemeProvider>(builder: (_, themeProviderRef, __) {
+      return AuthWidgetBuilder(
+        databaseBuilder: databaseBuilder,
+        builder: (BuildContext context, AsyncSnapshot<UserModel> userSnapshot) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Notes',
+            routes: Routes.routes,
+            theme: AppThemes.lightTheme,
+            darkTheme: AppThemes.darkTheme,
+            themeMode: themeProviderRef.isDarkModeOn
+                ? ThemeMode.dark
+                : ThemeMode.light,
+            home: Consumer<AuthProvider>(builder: (_, authProviderRef, __) {
+              if (userSnapshot.connectionState == ConnectionState.active) {
+                return userSnapshot.hasData ? SplashScreen() : LoginScreen();
+              }
+
+              return Material(
+                child: showCircularProgress(),
+              );
+            }),
           );
-        } else
-          return buildWaitingScreen();
-        break;
-      default:
-        return buildWaitingScreen();
-    }
+        },
+      );
+    });
   }
 }

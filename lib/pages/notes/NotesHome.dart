@@ -1,17 +1,10 @@
-import 'dart:ui';
-
-import 'package:flutter/material.dart';
 import 'package:note_share/pages/notes/NotesFetcher.dart';
 import 'package:note_share/pages/notes/NotesGridView.dart';
 
 class NotesHome extends NotesGridView {
-  final VoidCallback logoutCallback;
-
-  NotesHome({
-    this.logoutCallback,
-  }) : super(
+  NotesHome()
+      : super(
           title: 'Home',
-          logoutCallback: logoutCallback,
           notesCallback: userNotesCallback,
         );
 }
