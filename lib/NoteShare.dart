@@ -24,7 +24,8 @@ class NoteShare extends StatelessWidget {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'Notes',
-            routes: Routes.routes,
+            //routes: Routes.routes,
+            onGenerateRoute: (RouteSettings settings) => Routes.routes(settings),
             theme: AppThemes.lightTheme,
             darkTheme: AppThemes.darkTheme,
             themeMode: themeProviderRef.isDarkModeOn

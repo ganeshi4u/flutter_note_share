@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
@@ -36,6 +37,9 @@ class _NotesGridViewState extends State<NotesGridView> {
               elevation: 0,
               floating: true,
               leading: GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pushNamed(Routes.notesFeed);
+                },
                 child: Icon(Icons.dashboard),
               ),
               actions: <Widget>[
@@ -43,7 +47,7 @@ class _NotesGridViewState extends State<NotesGridView> {
                   padding: EdgeInsets.only(right: 10.0),
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.of(context).pushNamed(Routes.settings);
+                      Navigator.of(context).pushNamed(Routes.settingsPage);
                     },
                     child: Icon(
                       Icons.settings,
