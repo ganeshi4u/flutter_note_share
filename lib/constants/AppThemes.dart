@@ -5,13 +5,16 @@ class AppThemes {
 
   //constants color range for light theme
   static const Color _lightPrimaryColor = Colors.black;
-  static const Color _lightPrimaryVariantColor = Colors.white;
+  static const Color _lightPrimaryVariantColor = Color(0xFFFAFAFA);
   static const Color _lightSecondaryColor = Colors.green;
   static const Color _lightOnPrimaryColor = Colors.black;
   static const Color _lightButtonPrimaryColor = Colors.orangeAccent;
   static const Color _lightAppBarColor = Colors.orangeAccent;
   static Color _lightIconColor = Colors.orangeAccent;
   static Color _lightSnackBarBackgroundErrorColor = Colors.redAccent;
+
+  //text constants
+  static Color _lightScreenCaptionColor = Color(0xFF616161);
 
   //text theme for light theme
   static final TextStyle _lightScreenHeadingTextStyle =
@@ -23,21 +26,21 @@ class AppThemes {
   static final TextStyle _lightScreenButtonTextStyle = TextStyle(
       fontSize: 14.0, color: _lightOnPrimaryColor, fontWeight: FontWeight.w500);
   static final TextStyle _lightScreenCaptionTextStyle = TextStyle(
-      fontSize: 12.0, color: _lightAppBarColor, fontWeight: FontWeight.w100);
+      fontSize: 12.0, color: _lightScreenCaptionColor, fontWeight: FontWeight.w100);
 
   static final TextTheme _lightTextTheme = TextTheme(
-    headline: _lightScreenHeadingTextStyle,
-    body1: _lightScreenTaskNameTextStyle,
-    body2: _lightScreenTaskDurationTextStyle,
+    headline5: _lightScreenHeadingTextStyle,
+    bodyText2: _lightScreenTaskNameTextStyle,
+    bodyText1: _lightScreenTaskDurationTextStyle,
     button: _lightScreenButtonTextStyle,
-    title: _lightScreenTaskNameTextStyle,
-    subhead: _lightScreenTaskNameTextStyle,
+    headline6: _lightScreenTaskNameTextStyle,
+    subtitle1: _lightScreenTaskNameTextStyle,
     caption: _lightScreenCaptionTextStyle,
   );
 
   //constants color range for dark theme
   static const Color _darkPrimaryColor = Colors.white;
-  static const Color _darkPrimaryVariantColor = Colors.black;
+  static const Color _darkPrimaryVariantColor = Color(0xFF151618);
   static const Color _darkSecondaryColor = Colors.white;
   static const Color _darkOnPrimaryColor = Colors.white;
   static const Color _darkButtonPrimaryColor = Colors.deepPurpleAccent;
@@ -58,12 +61,12 @@ class AppThemes {
       fontSize: 12.0, color: _darkAppBarColor, fontWeight: FontWeight.w100);
 
   static final TextTheme _darkTextTheme = TextTheme(
-    headline: _darkScreenHeadingTextStyle,
-    body1: _darkScreenTaskNameTextStyle,
-    body2: _darkScreenTaskDurationTextStyle,
+    headline5: _darkScreenHeadingTextStyle,
+    bodyText2: _darkScreenTaskNameTextStyle,
+    bodyText1: _darkScreenTaskDurationTextStyle,
     button: _darkScreenButtonTextStyle,
-    title: _darkScreenTaskNameTextStyle,
-    subhead: _darkScreenTaskNameTextStyle,
+    headline6: _darkScreenTaskNameTextStyle,
+    subtitle1: _darkScreenTaskNameTextStyle,
     caption: _darkScreenCaptionTextStyle,
   );
 

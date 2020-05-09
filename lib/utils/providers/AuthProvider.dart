@@ -117,12 +117,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // void signOutGoogle() async {
-  //   await googleSignIn.signOut();
-
-  //   print("User Sign Out");
-  // }
-
 // Facebook login
   Future<bool> logInWithFacebook() async {
     _status = Status.Authenticating;
@@ -161,10 +155,6 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
-
-  // void logOutFacebook() async {
-  //   await facebookLogin.logOut();
-  // }
 
   Future<bool> _handleAccountExists(
       String accessToken, AuthCredential facebookAuthCred) async {

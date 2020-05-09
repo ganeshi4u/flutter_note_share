@@ -1,7 +1,9 @@
-import 'package:note_share/pages/notes/NotesFetcher.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:note_share/pages/notes/NotesGridView.dart';
+import 'package:note_share/utils/services/FirestoreDatabase.dart';
+import 'package:provider/provider.dart';
 
-class NotesHome extends NotesGridView {
+class NotesHome extends NotesGridView {     
   NotesHome()
       : super(
           title: 'Home',
@@ -9,8 +11,9 @@ class NotesHome extends NotesGridView {
         );
 }
 
-List<Note> userNotesCallback() {
-  List<Note> fetchedNotes = fetchUserNotes();
+Stream<dynamic> userNotesCallback(BuildContext context) {
+  final FirestoreDatabase firestoreDatabase =
+        Provider.of<FirestoreDatabase>(context, listen: false);
 
-  return fetchedNotes;
+  return firestoreDatabase.userNotesStream();
 }

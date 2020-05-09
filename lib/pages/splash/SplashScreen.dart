@@ -21,17 +21,18 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Center(
               child: Text(
                 'Note Share',
                 style: TextStyle(
-                    fontSize: Theme.of(context).textTheme.headline.fontSize),
+                    fontSize: Theme.of(context).textTheme.headline5.fontSize),
               ),
             ),
-            FlutterLogo(
-              size: 128,
+            Padding(
+              padding: EdgeInsets.all(10.0),
+              child: CircularProgressIndicator(),
             ),
           ],
         ),

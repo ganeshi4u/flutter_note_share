@@ -10,8 +10,8 @@ import 'package:note_share/utils/providers/ThemeProvider.dart';
 import 'package:note_share/utils/services/FirestoreDatabase.dart';
 import 'package:provider/provider.dart';
 
-class RootPage extends StatelessWidget {
-  const RootPage({Key key, this.databaseBuilder}) : super(key: key);
+class NoteShare extends StatelessWidget {
+  const NoteShare({Key key, this.databaseBuilder}) : super(key: key);
   final FirestoreDatabase Function(BuildContext context, String uid)
       databaseBuilder;
 

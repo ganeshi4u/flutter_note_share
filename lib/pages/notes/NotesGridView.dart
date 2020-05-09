@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:note_share/pages/notes/NoteView.dart';
-import 'package:note_share/settings/SettingsPage.dart';
-import 'package:note_share/pages/notes/NotesFetcher.dart';
+
+import 'package:note_share/Routes.dart';
+import 'package:note_share/models/NotesModel.dart';
 
 class NotesGridView extends StatefulWidget {
   final String title;
@@ -18,33 +18,11 @@ class NotesGridView extends StatefulWidget {
 }
 
 class _NotesGridViewState extends State<NotesGridView> {
-  List<Widget> _notes;
-  List<Note> fetchedNotes;
-
-  int notesSize;
-
-  @override
-  void initState() {
-    fetchedNotes = fetchUserNotes();
-    notesSize = fetchedNotes.length;
-    super.initState();
-  }
+  String dropdownValue = 'Home';
+  List<String> noteViews = ['Home', 'Favourite', 'Public'];
 
   @override
   Widget build(BuildContext context) {
-    final String title = widget.title;
-    int notesSize = fetchedNotes.length;
-    print(notesSize);
-
-    _notes = new List.generate(
-      notesSize,
-      (int i) => new NoteWidget(
-        key: UniqueKey(),
-        userNote: fetchedNotes[i],
-      ),
-      growable: true,
-    );
-
     return new SafeArea(
       top: false,
       left: true,
@@ -65,11 +43,7 @@ class _NotesGridViewState extends State<NotesGridView> {
                   padding: EdgeInsets.only(right: 10.0),
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (BuildContext context) => SettingsPage(),
-                        ),
-                      );
+                      Navigator.of(context).pushNamed(Routes.settings);
                     },
                     child: Icon(
                       Icons.settings,
@@ -79,30 +53,116 @@ class _NotesGridViewState extends State<NotesGridView> {
               ],
             ),
             SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Text(
-                  'Home',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Colors.grey[800],
-                  ),
+              child: Container(
+                padding: EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.0),
+                      decoration: new BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            blurRadius: 5.0,
+                            offset: Offset(
+                              0,
+                              5.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton(
+                          value: dropdownValue,
+                          icon: Icon(Icons.keyboard_arrow_down),
+                          iconSize: 24,
+                          elevation: 9,
+                          isExpanded: false,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          onChanged: (String newValue) {
+                            setState(() {
+                              dropdownValue = newValue;
+                            });
+                          },
+                          items: noteViews.map<DropdownMenuItem<String>>(
+                            (String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            },
+                          ).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.all(10),
-              sliver: new SliverStaggeredGrid.countBuilder(
-                crossAxisCount: 2,
-                itemCount: _notes.length,
-                itemBuilder: (context, index) => _notes[index],
-                staggeredTileBuilder: (int index) =>
-                    new StaggeredTile.count(1, index.isOdd ? 2 : 1),
-                crossAxisSpacing: 5,
-                mainAxisSpacing: 5,
-                //childAspectRatio: MediaQuery.of(context).size.width / MediaQuery.of(context).size.height,
-              ),
+            StreamBuilder(
+              stream: widget.notesCallback(context),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  List<NotesModel> userNotes = snapshot.data;
+                  List<NotesModel> tempNotes = new List<NotesModel>();
+                  if (dropdownValue.contains('Favourite')) {
+                    for (var note in userNotes) {
+                      if (note.isFav) {
+                        tempNotes.add(note);
+                      }
+                    }
+                    userNotes.clear();
+                    userNotes = tempNotes.map((note) => note).toList();
+                  } else if (dropdownValue.contains('Public')) {
+                    for (var note in userNotes) {
+                      if (note.isPublic) {
+                        tempNotes.add(note);
+                      }
+                    }
+                    userNotes.clear();
+                    userNotes = tempNotes.map((note) => note).toList();
+                  }
+                  if (userNotes.isNotEmpty) {
+                    return SliverPadding(
+                      padding: const EdgeInsets.all(10),
+                      sliver: new SliverStaggeredGrid.countBuilder(
+                        crossAxisCount: 2,
+                        itemCount: userNotes.length,
+                        itemBuilder: (context, index) =>
+                            new NoteWidget(userNote: userNotes[index]),
+                        staggeredTileBuilder: (int index) =>
+                            new StaggeredTile.count(1, index.isOdd ? 2 : 1),
+                        crossAxisSpacing: 5,
+                        mainAxisSpacing: 5,
+                      ),
+                    );
+                  } else {
+                    return SliverToBoxAdapter(
+                      child: Center(
+                        child: Text('No Notes!'),
+                      ),
+                    );
+                  }
+                } else if (snapshot.hasError) {
+                  return SliverToBoxAdapter(
+                    child: Center(
+                      child: Text('Failed to fetch notes!'),
+                    ),
+                  );
+                }
+                return SliverToBoxAdapter(
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -111,27 +171,22 @@ class _NotesGridViewState extends State<NotesGridView> {
           elevation: 4,
           icon: const Icon(Icons.note_add),
           label: const Text('New note'),
-          onPressed: addNote,
+          onPressed: () {
+            Navigator.of(context).pushNamed(
+              Routes.notesView,
+            );
+          },
           tooltip: 'Add a new note',
         ),
       ),
     );
   }
-
-  void addNote() {
-    setState(() {
-      fetchedNotes.insert(0, new Note(noteId: 123));
-      print(fetchedNotes.asMap());
-    });
-  }
 }
 
 class NoteWidget extends StatefulWidget {
-  final Note userNote;
-  final Key key;
+  final NotesModel userNote;
 
   NoteWidget({
-    this.key,
     this.userNote,
   });
 
@@ -143,24 +198,21 @@ class _NoteWidgetState extends State<NoteWidget> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      key: widget.key,
+      key: Key(widget.userNote.noteId),
       elevation: 5,
-      color: Colors.teal[widget.userNote.noteShade],
+      color: Colors.grey[widget.userNote.noteShade],
       child: InkWell(
         splashColor: Colors.blue.withAlpha(30),
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (BuildContext context) => NoteView(),
-            ),
-          );
+          Navigator.of(context)
+              .pushNamed(Routes.notesView, arguments: widget.userNote);
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             new ListTile(
               title: Text(
-                widget.userNote.noteId.toString(),
+                widget.userNote.noteTitle,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
