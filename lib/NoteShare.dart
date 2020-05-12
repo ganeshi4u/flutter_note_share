@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'package:note_share/Routes.dart';
 import 'package:note_share/constants/AppThemes.dart';
 import 'package:note_share/models/UserModel.dart';
@@ -8,7 +10,7 @@ import 'package:note_share/utils/AuthWidgetBuilder.dart';
 import 'package:note_share/utils/providers/AuthProvider.dart';
 import 'package:note_share/utils/providers/ThemeProvider.dart';
 import 'package:note_share/utils/services/FirestoreDatabase.dart';
-import 'package:provider/provider.dart';
+import 'package:note_share/widgets/CircularProgressColor.dart';
 
 class NoteShare extends StatelessWidget {
   const NoteShare({Key key, this.databaseBuilder}) : super(key: key);
@@ -25,7 +27,8 @@ class NoteShare extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: 'Notes',
             //routes: Routes.routes,
-            onGenerateRoute: (RouteSettings settings) => Routes.routes(settings),
+            onGenerateRoute: (RouteSettings settings) =>
+                Routes.routes(settings),
             theme: AppThemes.lightTheme,
             darkTheme: AppThemes.darkTheme,
             themeMode: themeProviderRef.isDarkModeOn
@@ -37,7 +40,7 @@ class NoteShare extends StatelessWidget {
               }
 
               return Material(
-                child: showCircularProgress(),
+                child: CircularProgressColor(),
               );
             }),
           );

@@ -1,7 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+
 import 'package:note_share/Routes.dart';
+import 'package:note_share/widgets/CircularProgressColor.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -32,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             Padding(
               padding: EdgeInsets.all(10.0),
-              child: CircularProgressIndicator(),
+              child: CircularProgressColor(),
             ),
           ],
         ),

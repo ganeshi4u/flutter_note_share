@@ -40,6 +40,11 @@ class AuthWidgetBuilder extends StatelessWidget {
               Provider<FirestoreDatabase>(
                 create: (context) => databaseBuilder(context, user.uid),
               ),
+              StreamProvider(
+                create: (context) =>
+                    Provider.of<FirestoreDatabase>(context, listen: false)
+                        .userNotesStream(),
+              ),
             ],
             child: builder(context, snapshot),
           );

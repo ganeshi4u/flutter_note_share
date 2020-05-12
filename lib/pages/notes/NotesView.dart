@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:random_string/random_string.dart';
 
 import 'package:note_share/models/NotesModel.dart';
 import 'package:note_share/utils/services/FirestoreDatabase.dart';
+import 'package:note_share/pages/notes/widgets/NoteBody.dart';
+import 'package:note_share/pages/notes/widgets/NoteBottomNavBar.dart';
+import 'package:note_share/pages/notes/widgets/NoteTitle.dart';
 
 class NotesView extends StatefulWidget {
   @override
@@ -11,6 +13,8 @@ class NotesView extends StatefulWidget {
 }
 
 class _NotesViewState extends State<NotesView> {
+  String currentDate() => DateTime.now().toIso8601String();
+
   TextEditingController _noteTitleController;
   TextEditingController _noteBodyController;
   NotesModel _note;
@@ -87,25 +91,29 @@ class _NotesViewState extends State<NotesView> {
           ),
           body: ListView(
             children: [
-              _noteTitle(),
-              _NoteBody(noteBodyController: _noteBodyController),
+              NoteTitle(
+                noteTitleController: _noteTitleController,
+              ),
+              NoteBody(
+                noteBodyController: _noteBodyController,
+              ),
             ],
           ),
-          bottomNavigationBar: _NoteBottomNavBar(),
+          bottomNavigationBar: NoteBottomNavBar(),
         ),
       ),
     );
   }
 
   Future<bool> _onBackExit() {
-    final FirestoreDatabase firestoreDatabase =
+    FirestoreDatabase firestoreDatabase =
         Provider.of<FirestoreDatabase>(context, listen: false);
 
     if (_noteTitleController.text.isNotEmpty ||
         _noteBodyController.text.isNotEmpty) {
       firestoreDatabase.saveUserNote(
         NotesModel(
-          noteId: _note != null ? _note.noteId : randomAlphaNumeric(10),
+          noteId: _note != null ? _note.noteId : currentDate(),
           noteShade: 300,
           noteTitle: _noteTitleController.text,
           noteContent: _noteBodyController.text,
@@ -125,94 +133,5 @@ class _NotesViewState extends State<NotesView> {
     _noteTitleController.dispose();
     _noteBodyController.dispose();
     super.dispose();
-  }
-
-// Note title block
-  Widget _noteTitle() {
-    return Container(
-      padding: EdgeInsets.all(8.0),
-      child: TextFormField(
-        controller: _noteTitleController,
-        decoration: InputDecoration(
-          hintText: 'Title',
-          hintStyle: TextStyle(color: Colors.grey[600]),
-          //fillColor: Colors.grey[200],
-          //filled: true,
-          contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey[400], width: 2.0),
-          ),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey[400], width: 2.0),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Note body block
-class _NoteBody extends StatefulWidget {
-  final TextEditingController noteBodyController;
-
-  _NoteBody({this.noteBodyController});
-
-  @override
-  State<StatefulWidget> createState() => _NoteBodyState();
-}
-
-class _NoteBodyState extends State<_NoteBody> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      //color: Colors.white,
-      constraints: BoxConstraints(
-        maxHeight: double.infinity,
-        maxWidth: double.infinity,
-        minHeight: 48.0,
-        minWidth: double.infinity,
-      ),
-      padding: EdgeInsets.symmetric(vertical: 16.0),
-      child: TextFormField(
-        controller: widget.noteBodyController,
-        keyboardType: TextInputType.multiline,
-        maxLines: null,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          contentPadding:
-              new EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
-        ),
-      ),
-    );
-  }
-}
-
-class _NoteBottomNavBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BottomAppBar(
-      child: new Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(left: 10.0),
-            child: IconButton(
-              icon: Icon(Icons.add_box),
-              color: Colors.grey[800],
-              onPressed: () => print('add list'),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 10.0),
-            child: IconButton(
-              icon: Icon(Icons.delete),
-              color: Colors.grey[800],
-              onPressed: () => print('deleted'),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
